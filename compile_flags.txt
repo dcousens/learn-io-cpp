@@ -1,0 +1,7 @@
+-std=c++2a
+-pedantic
+-Wall
+-Wextra
+-Wconversion
+-Wstack-protector
+-fsanitize=undefined
