@@ -57,6 +57,30 @@ int main () {
 				fprintf(stderr, "  accept fd:%i\n", cfd);
 				continue;
 			}
+
+			// echo
+			auto buffer = std::array<char, 65556>{};
+			auto const count = read(efd, buffer.begin(), buffer.size());
+			if (count < 0) continue; // error
+			if (count == 0) { // closed
+				if (epctl(ep, efd, EPOLL_CTL_DEL)) return 1;
+				if (close(efd) != 0) return 1;
+				fprintf(stderr, "  close fd:%i\n", efd);
+
+				break;
+			}
+			if (static_cast<size_t>(count) >= buffer.size()) return 1; // uh oh
+
+			// print friendly
+			buffer.at(static_cast<size_t>(count)) = '\0';
+			for (size_t j = 0; j < static_cast<size_t>(count); ++j) {
+				auto& c = buffer.at(j);
+				if (c < ' ' or c > '~') c = '.';
+			}
+			fprintf(stderr, "    fd:%i read '%s'\n", efd, buffer.data());
+
+			if (write(efd, buffer.data(), static_cast<size_t>(count)) == -1) continue;
+			fprintf(stderr, "    fd:%i write\n", efd);
 		}
 	}
 
