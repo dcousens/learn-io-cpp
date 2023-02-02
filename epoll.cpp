@@ -5,6 +5,7 @@
 
 #include <netdb.h>
 #include <sys/epoll.h>
+#include <sys/fcntl.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -53,6 +54,7 @@ int main () {
 			if (efd == lfd) {
 				auto const cfd = accept(efd, nullptr, nullptr);
 				if (cfd == -1) continue;
+				if (fcntl(cfd, F_SETFL, O_NONBLOCK) == -1) return 1;
 				if (epctl(ep, cfd, EPOLL_CTL_ADD)) return 1;
 
 				fprintf(stderr, "  accept fd:%i\n", cfd);
