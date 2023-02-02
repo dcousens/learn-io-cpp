@@ -30,7 +30,7 @@ int main () {
 		auto const cfd = accept(lfd, nullptr, nullptr);
 		if (cfd == -1) continue;
 
-		fprintf(stderr, "accept %i\n", cfd);
+		fprintf(stderr, "  accept fd:%i\n", cfd);
 
 		// echo loop
 		while (1) {
@@ -39,14 +39,21 @@ int main () {
 			if (count < 0) continue; // error
 			if (count == 0) break; // closed
 			if (static_cast<size_t>(count) >= buffer.size()) return 1; // uh oh
-			fprintf(stderr, "  recv %i\n", cfd);
+
+			// print friendly
+			buffer.at(static_cast<size_t>(count)) = '\0';
+			for (size_t j = 0; j < static_cast<size_t>(count); ++j) {
+				auto& c = buffer.at(j);
+				if (c < ' ' or c > '~') c = '.';
+			}
+			fprintf(stderr, "    fd:%i read '%s'\n", cfd, buffer.data());
 
 			if (write(cfd, buffer.data(), static_cast<size_t>(count)) == -1) continue;
-			fprintf(stderr, "  send %i\n", cfd);
+			fprintf(stderr, "    fd:%i write\n", cfd);
 		}
 
 		if (close(cfd) != 0) return 1;
-		fprintf(stderr, "close %i\n", cfd);
+		fprintf(stderr, "  close fd:%i\n", cfd);
 	}
 
 	return 0;
