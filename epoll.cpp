@@ -39,6 +39,9 @@ int main () {
 	auto ep = epoll_create1(0);
 	if (epctl(ep, lfd, EPOLL_CTL_ADD)) return 1;
 
+	// listen to stdin too, why not
+	if (epctl(ep, STDIN_FILENO, EPOLL_CTL_ADD)) return 1;
+
 	// epoll loop
 	while (1) {
 		fprintf(stderr, "loop\n");
@@ -78,6 +81,9 @@ int main () {
 			for (auto& c : buffer) if (not isprint(c)) c = ' ';
 			buffer.at(static_cast<size_t>(count)) = '\0';
 			fprintf(stderr, "    fd:%i read '%s'\n", efd, buffer.data());
+
+			// dont echo to stdin
+			if (efd == STDIN_FILENO) continue;
 
 			if (write(efd, buffer.data(), static_cast<size_t>(count)) == -1) continue;
 			fprintf(stderr, "    fd:%i write\n", efd);
