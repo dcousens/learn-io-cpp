@@ -2,11 +2,7 @@
 {
 	while true; do
 		{
-			echo 'hello one'
-			echo 'hello two'
-			echo 'hello three'
-			echo 'hello four'
-			echo 'hello five'
+			echo "hello $$"
 		} | ncat 127.0.0.1 5000
 
 		sleep 1

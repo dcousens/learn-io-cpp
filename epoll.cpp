@@ -1,6 +1,7 @@
 #include <array>
 #include <cstdio>
 #include <cstring>
+#include <cctype>
 
 #include <netdb.h>
 #include <sys/epoll.h>
@@ -59,7 +60,7 @@ int main () {
 			}
 
 			// echo
-			auto buffer = std::array<char, 65556>{};
+			auto buffer = std::array<char, 1024>{};
 			auto const count = read(efd, buffer.begin(), buffer.size());
 			if (count < 0) continue; // error
 			if (count == 0) { // closed
@@ -72,11 +73,8 @@ int main () {
 			if (static_cast<size_t>(count) >= buffer.size()) return 1; // uh oh
 
 			// print friendly
+			for (auto& c : buffer) if (not isprint(c)) c = ' ';
 			buffer.at(static_cast<size_t>(count)) = '\0';
-			for (size_t j = 0; j < static_cast<size_t>(count); ++j) {
-				auto& c = buffer.at(j);
-				if (c < ' ' or c > '~') c = '.';
-			}
 			fprintf(stderr, "    fd:%i read '%s'\n", efd, buffer.data());
 
 			if (write(efd, buffer.data(), static_cast<size_t>(count)) == -1) continue;
